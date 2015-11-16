@@ -1,0 +1,13 @@
+{
+  "name": "example-app",
+  "version": "0.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+  },
+  "author": "",
+  "license": "Apache 2.0",
+  "dependencies": {
+    "cli-color": "^1.0.0"
+  }
+}
