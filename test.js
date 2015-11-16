@@ -85,7 +85,7 @@ function isAdmin(user_id){
 }
 
 function sendHelp(event, room) {
-    var body = "Hi, I'm Jeeves...<br/>\n" +
+    var body = "Hi, I'm Watney...<br/>\n" +
         "Your options:<br/><br/>\n\n" +
         "<b>!help</b> - this message<br/>\n" +
         "<b>!login [{env}]</b> - Get a login link for env - dev, stage, prod<br/>\n" +
@@ -170,7 +170,6 @@ function login(event, room, body) {
     var _ = require('underscore'); // for some utility goodness
     var spawn = require('child_process').spawn,
         drush = spawn('drush', args, {
-            env: _.extend(process.env, { SSH_AUTH_SOCK:'/run/user/1000/keyring/ssh'})
         });
 
     drush.stdout.on('data', function(data){
