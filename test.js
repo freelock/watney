@@ -48,6 +48,9 @@ matrixClient.on("Room.timeline", function(event, room, toStartOfTimeline) {
                 case 'login':
                     login(event, room, body);
                     break;
+                case 'status':
+                    printStatus(event, room, body);
+                    break;
             }
         }
     }
@@ -91,7 +94,7 @@ function sendHelp(event, room) {
         "<b>!login [{env}]</b> - Get a login link for env - dev, stage, prod<br/>\n" +
         "<b>!state</b> - Print freelock project info for this room<br/>\n" +
         "<b>!state {item} {value}</b> - Set a freelock item to value<br/>\n" +
-        "<b>!status [{env}]</b> - print the status of an environment - dev, stage, prod or blank for all<br/>\n";
+        "<b>!status [update] [{env}]</b> - print the version of an environment - dev, stage, prod or blank for all<br/>\n";
     matrixClient.sendHtmlNotice(room.roomId, body, body);
 }
 
@@ -137,12 +140,130 @@ function handleState(event, room, body) {
     }
 }
 
+function printStatus(event, room, body){
+    var env, envstate, envs, fullAlias, alias, update=0, state = room.currentState.getStateEvents(config.stateName, 'alias');
+    alias = state.getContent().alias;
+    envstate = room.currentState.getStateEvents(config.stateName, 'envs');
+    envs = envstate ? envstate.getContent().envs : [];
+
+    var matches = body.match(/!status( update)? ?([.a-z]*)/);
+    if (matches) {
+        env = matches[2];
+        if (matches[1]) {
+            update = 1;
+        }
+        if (env)
+            fullAlias = '@' + alias + '.' + env;
+        else
+            fullAlias = '@' + alias;
+    } else {
+        fullAlias = '@' + alias;
+    }
+
+    if (update) {
+        var msg = 'Running <b>drush ' + fullAlias + ' variable-get site_version</b>.';
+        matrixClient.sendHtmlNotice(room.roomId, msg, msg);
+
+        var args = [fullAlias, 'vget', 'site_version', '-y'];
+
+        // Now execute drush...
+        var _ = require('underscore'); // for some utility goodness
+        var spawn = require('child_process').spawn,
+            drush = spawn('drush', args, {});
+
+        drush.stdout.on('data', function (data) {
+            // if data starts with alias, parse and store it..
+            var currEnv, version, newState, pattern1 = "^" + alias + "\.([a-z]+)\ .*site_version: (.*)\n",
+                pattern2 = /site_version: \'(.+)\'\n/,
+                str = data.toString();
+            var matches = str.match(pattern1);
+            if (matches) {
+                currEnv = matches[1];
+                version = matches[2];
+            } else {
+                matches = str.match(pattern2);
+                if (matches) {
+                    currEnv = env;
+                    version = matches[1];
+                }
+            }
+            if (currEnv) {
+                newState = {};
+                newState[currEnv + '.version'] = version;
+                matrixClient.sendStateEvent(room.roomId, config.stateName, newState, currEnv + '.version')
+                    .then(function () {
+                        msg = '<font color="green">' + currEnv + '.version set to: ' + version + '</font>';
+                        matrixClient.sendHtmlNotice(room.roomId, msg, msg);
+                        if (!envs) {
+                            envs = [];
+                        }
+                        if (envs.indexOf(env) == -1) {
+                            envs.push(currEnv);
+                            if (!envstate) {
+                                envstate = {};
+                            }
+                            envstate.envs = envs;
+                            matrixClient.sendStateEvent(room.roomId, config.stateName, envstate, 'envs')
+                                .then(function () {
+                                    msg = '<font color="green">Added ' + currEnv + ' to environments.</font>';
+                                    matrixClient.sendHtmlNotice(room.roomId, msg, msg);
+                                },
+                                function(data){
+                                    sendError(room, data);
+                                })
+                        }
+
+                    },
+                    function(data){
+                        sendError(room, data);
+                    });
+            } else {
+                msg = 'Unknown message: <font color="green">' + data + '</font>';
+                matrixClient.sendHtmlNotice(room.roomId, msg, msg);
+            }
+
+        });
+
+        drush.stderr.on('data', function (data) {
+            msg = '<font color="red">Drush returned an error: ' + data + '</font>';
+            matrixClient.sendHtmlNotice(room.roomId, msg, msg);
+        });
+    } else {
+        var envState, version;
+        if (env) {
+            envState = room.currentState.getStateEvents(config.stateName, env+'.version');
+            if (envState) {
+                version = envState.getContent()[env+'.version'];
+                msg = '<font color="green">' + env + ' version: ' + version + '</font>';
+                matrixClient.sendHtmlNotice(room.roomId, msg, msg);
+            } else {
+                msg = '<font color="red">Status not collected. Run !status update...</font>';
+                matrixClient.sendHtmlNotice(room.roomId, msg, msg);
+            }
+        } else {
+            if (envs.length) {
+                for (var i = 0; i < envs.length; i++) {
+                    env = envs[i];
+                    envState = room.currentState.getStateEvents(config.stateName, env + '.version');
+                    version = envState.getContent()[env+'.version'];
+                    msg = '<font color="green">' + env + ' version: ' + version + '</font>';
+                    matrixClient.sendHtmlNotice(room.roomId, msg, msg);
+                }
+            } else {
+                msg = '<font color="red">Status not collected. Run !status update...</font>';
+                matrixClient.sendHtmlNotice(room.roomId, msg, msg);
+            }
+        }
+    }
+
+}
+
 function login(event, room, body) {
 
     var alias, state = room.currentState.getStateEvents(config.stateName, 'alias');
     alias = state.getContent().alias;
     var env, user = '';
-    var matches = body.match(/!login ([a-z]*)( ('|")?([a-zA-Z0-9 _-]+)('|")?)?$/);
+    var matches = body.match(/!login ([a-z]*)( ('|")?([-a-zA-Z0-9 _.]+)('|")?)?$/);
     if (matches) {
         env = matches[1];
         if (matches[4]) {
@@ -156,7 +277,7 @@ function login(event, room, body) {
         }
     }
     if (user) {
-        user = '"' + user + '"';
+      //  user = '"' + user + '"';
     }
     var fullAlias = '@'+alias+'.'+env;
     var msg = 'Running <b>drush '+fullAlias+' user-login '+ user+'</b>.';
@@ -184,14 +305,21 @@ function login(event, room, body) {
 
 }
 
+function siteVersion(event,room,body) {
+
+}
+
 /**
  * Automatically join room when invited
  */
 matrixClient.on("RoomMember.membership", function(event, member) {
+    if (isAdmin(event.event.user_id)) {
+
     if (member.membership === "invite" && member.userId === config.myUserId) {
         matrixClient.joinRoom(member.roomId).done(function() {
             console.log("Auto-joined %s", member.roomId);
         });
+    }
     }
 });
 
@@ -202,6 +330,12 @@ matrixClient.on("RoomMember.membership", function(event, member) {
  */
 function exec_drush(args){
 
+}
+
+function sendError(room, data) {
+    console.log(data);
+    msg = '<font color="red">Unknown issue: '+data+'</font>';
+    matrixClient.sendHtmlNotice(room.roomId, msg, msg);
 }
 
 var parseArgs = function(str, lookForQuotes) {
