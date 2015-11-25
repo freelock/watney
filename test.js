@@ -141,7 +141,7 @@ function handleState(event, room, body) {
 }
 
 function printStatus(event, room, body){
-    var env, envstate, envs, fullAlias, alias, update=0, state = room.currentState.getStateEvents(config.stateName, 'alias');
+    var env, envstate, envs, fullAlias, alias, resetEnvs = 0, update=0, state = room.currentState.getStateEvents(config.stateName, 'alias');
     alias = state.getContent().alias;
     envstate = room.currentState.getStateEvents(config.stateName, 'envs');
     envs = envstate ? envstate.getContent().envs : [];
@@ -156,7 +156,7 @@ function printStatus(event, room, body){
             fullAlias = '@' + alias + '.' + env;
         else
             fullAlias = '@' + alias;
-            envs = []; // reset overzealous environment pushes
+            resetEnvs = 1; // reset overzealous environment pushes
     } else {
         fullAlias = '@' + alias;
     }
@@ -165,6 +165,9 @@ function printStatus(event, room, body){
         var msg = 'Running <b>drush ' + fullAlias + ' variable-get site_version</b>.';
         matrixClient.sendHtmlNotice(room.roomId, msg, msg);
 
+        if (resetEnvs) {
+            envs = [];
+        }
         var args = [fullAlias, 'vget', 'site_version', '-y'];
 
         // Now execute drush...
