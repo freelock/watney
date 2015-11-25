@@ -152,11 +152,13 @@ function printStatus(event, room, body){
         if (matches[1]) {
             update = 1;
         }
-        if (env)
+        if (env) {
             fullAlias = '@' + alias + '.' + env;
-        else
+        }
+        else {
             fullAlias = '@' + alias;
             resetEnvs = 1; // reset overzealous environment pushes
+        }
     } else {
         fullAlias = '@' + alias;
     }
