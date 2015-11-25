@@ -156,6 +156,7 @@ function printStatus(event, room, body){
             fullAlias = '@' + alias + '.' + env;
         else
             fullAlias = '@' + alias;
+            envs = []; // reset overzealous environment pushes
     } else {
         fullAlias = '@' + alias;
     }
@@ -198,7 +199,7 @@ function printStatus(event, room, body){
                         if (!envs) {
                             envs = [];
                         }
-                        if (envs.indexOf(env) == -1) {
+                        if (envs.indexOf(currEnv) == -1) {
                             envs.push(currEnv);
                             envstate.envs = envs;
                             matrixClient.sendStateEvent(room.roomId, config.stateName, envstate, 'envs')
@@ -227,7 +228,7 @@ function printStatus(event, room, body){
             matrixClient.sendHtmlNotice(room.roomId, msg, msg);
         });
     } else {
-        var envState, version;
+        var envState, version, currEnv;
         if (env) {
             envState = room.currentState.getStateEvents(config.stateName, env+'.version');
             if (envState) {
@@ -241,10 +242,10 @@ function printStatus(event, room, body){
         } else {
             if (envs.length) {
                 for (var i = 0; i < envs.length; i++) {
-                    env = envs[i];
-                    envState = room.currentState.getStateEvents(config.stateName, env + '.version');
-                    version = envState.getContent()[env+'.version'];
-                    msg = '<font color="green">' + env + ' version: ' + version + '</font>';
+                    currEnv = envs[i];
+                    envState = room.currentState.getStateEvents(config.stateName, currEnv + '.version');
+                    version = envState.getContent()[currEnv+'.version'];
+                    msg = '<font color="green">' + currEnv + ' version: ' + version + '</font>';
                     matrixClient.sendHtmlNotice(room.roomId, msg, msg);
                 }
             } else {
