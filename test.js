@@ -199,12 +199,9 @@ function printStatus(event, room, body){
                         var envstate = {};
                         msg = '<font color="green">' + currEnv + '.version set to: ' + version + '</font>';
                         matrixClient.sendHtmlNotice(room.roomId, msg, msg);
-                        if (!envs) {
-                            envs = [];
-                        }
                         if (envs.indexOf(currEnv) == -1) {
                             envs.push(currEnv);
-                            envstate.envs = envs;
+                            envstate['envs'] = envs;
                             matrixClient.sendStateEvent(room.roomId, config.stateName, envstate, 'envs')
                                 .then(function () {
                                     msg = '<font color="green">Added ' + currEnv + ' to environments.</font>';
