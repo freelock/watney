@@ -192,6 +192,7 @@ function printStatus(event, room, body){
                 newState[currEnv + '.version'] = version;
                 matrixClient.sendStateEvent(room.roomId, config.stateName, newState, currEnv + '.version')
                     .then(function () {
+                        var envstate = {};
                         msg = '<font color="green">' + currEnv + '.version set to: ' + version + '</font>';
                         matrixClient.sendHtmlNotice(room.roomId, msg, msg);
                         if (!envs) {
@@ -199,9 +200,6 @@ function printStatus(event, room, body){
                         }
                         if (envs.indexOf(env) == -1) {
                             envs.push(currEnv);
-                            if (!envstate) {
-                                envstate = {};
-                            }
                             envstate.envs = envs;
                             matrixClient.sendStateEvent(room.roomId, config.stateName, envstate, 'envs')
                                 .then(function () {
