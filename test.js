@@ -211,7 +211,19 @@ function printStatus(event, room, body){
                                     matrixClient.sendHtmlNotice(room.roomId, msg, msg);
                                 },
                                 function(data){
-                                    sendError(room, data);
+                                    if (data && data.errcode && data.errcode == 'M_LIMIT_EXCEEDED') {
+                                        var retryAfter = data.data.retry_after_ms;
+                                        setTimeout(function(){
+                                            matrixClient.sendStateEvent(room.roomId, config.stateName, envstate, 'envs')
+                                                .then(function(){
+                                                    msg = '<font color="green">Added ' + currEnv + ' to environments.</font>';
+                                                    matrixClient.sendHtmlNotice(room.roomId, msg, msg);
+                                                })
+                                        }, retryAfter);
+                                    } else {
+                                        sendError(room, data);
+
+                                    }
                                 })
                         }
 
