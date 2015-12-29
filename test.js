@@ -132,7 +132,7 @@ function handleState(event, room, body) {
                     matrixClient.sendNotice(room.roomId, stateKey + ' set to: ' + value);
             },
             function(code,data){
-                msg = '<font color="red">There was a problem processing this request: '+code;
+                var msg = '<font color="red">There was a problem processing this request: '+code;
                 console.log('Error on setting state',code,data);
                 matrixClient.sendHtmlNotice(room.roomId, msg, msg);
 
@@ -276,7 +276,7 @@ function login(event, room, body) {
     var alias, state = room.currentState.getStateEvents(config.stateName, 'alias');
     alias = state.getContent().alias;
     var env, user = '';
-    var matches = body.match(/!login ([a-z]*)( ('|")?([-a-zA-Z0-9 _.]+)('|")?)?$/);
+    var matches = body.match(/!login ([-a-z0-9_.]*)( ('|")?([-a-zA-Z0-9 _.]+)('|")?)?$/);
     if (matches) {
         env = matches[1];
         if (matches[4]) {
@@ -347,7 +347,7 @@ function exec_drush(args){
 
 function sendError(room, data) {
     console.log(data);
-    msg = '<font color="red">Unknown issue: '+data+'</font>';
+    var msg = '<font color="red">Unknown issue: '+data+'</font>';
     matrixClient.sendHtmlNotice(room.roomId, msg, msg);
 }
 
