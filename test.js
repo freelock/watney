@@ -109,7 +109,7 @@ function sendHelp(event, room) {
         "<b>!help</b> - this message<br/>\n" +
         "<b>!login [{env}]</b> - Get a login link for env - dev, stage, prod<br/>\n" +
         "<b>!release</b> - Get the current release notes<br/>\n" +
-        "<b>!release [note|step|test]</b> - Add a release note, step, or test<br/>\n" +
+        "<b>!release [note|step|test|create|status]</b> - Add a release note, step, or test<br/>\n" +
         "<b>!state</b> - Print freelock project info for this room<br/>\n" +
         "<b>!state {item} {value}</b> - Set a freelock item to value<br/>\n" +
         "<b>!status [update] [{env}]</b> - print the version of an environment - dev, stage, prod or blank for all<br/>\n";
@@ -376,6 +376,7 @@ function releaseNotes(event,room,body) {
             matrixClient.sendHtmlNotice(room.roomId, msg, msg);
             newState = {
                 active: true,
+                status: 'dev',
                 version: version,
                 notes: [],
                 steps: [],
@@ -424,6 +425,17 @@ function releaseNotes(event,room,body) {
         return;
     }
     var cmd = args[1];
+    if (cmd == 'status' && !args[2]) {
+        var curStatus = props.status ? props.status : 'dev';
+        msg = '<font color="green">Status is <b>' + curStatus +'</b>';
+        matrixClient.sendHtmlNotice(room.roomId, msg, msg);
+        return;
+    }
+    if (!args[2]) {
+        msg = '<font color="red"><b>' + cmd + '</b> requires a message to add.</font>';
+        matrixClient.sendHtmlNotice(room.roomId, msg, msg);
+        return;
+    }
     switch (cmd) {
         case 'note':
         case 'test':
@@ -443,8 +455,23 @@ function releaseNotes(event,room,body) {
 
                     });
             break;
+        case 'status':
+            msg = body.substring(args[0].length + cmd.length + 2);
+            props[cmd] = msg;
+            matrixClient.sendStateEvent(room.roomId, config.releaseName, props)
+                .then(function(){
+                        matrixClient.sendNotice(room.roomId, 'Release '+version + ' '+cmd+' set to  ' + msg);
+                    },
+                    function(code,data){
+                        var msg = '<font color="red">There was a problem processing this request: '+code;
+                        console.log('Error on setting state',code,data);
+                        matrixClient.sendHtmlNotice(room.roomId, msg, msg);
+
+                    });
+            break;
+
         default:
-            msg = '<font color="red">Request not recognized. Recognized release commands: create, note, step, task, commit, case.</font>';
+            msg = '<font color="red">Request not recognized. Recognized release commands: create, note, step, task, commit, case, status.</font>';
             matrixClient.sendHtmlNotice(room.roomId, msg, msg);
 
     }
