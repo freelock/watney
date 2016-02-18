@@ -48,6 +48,9 @@ matrixClient.on("Room.timeline", function(event, room, toStartOfTimeline) {
                 case 'login':
                     login(event, room, body);
                     break;
+                case 'release':
+                    releaseNotes(event, room, body);
+                    break;
                 case 'status':
                     printStatus(event, room, body);
                     break;
@@ -80,11 +83,24 @@ function setRoomList() {
 }
 
 function isAdmin(user_id){
-  var localmatch = user_id.match(/@(.*):matrix\.freelock\.com/);
+  var localmatch = user_id.match(/^@(.*):matrix\.freelock\.com$/);
     if (localmatch){
         return config.admins.indexOf(localmatch[1]) != -1;
     }
     return false;
+}
+
+/**
+ * Right now, allow logins to anyone @:matrix.freelock.com.
+ * @param user_id
+ */
+function canLogin(user_id){
+    var localmatch = user_id.match(/^@(.*):matrix\.freelock\.com$/);
+    if (localmatch){
+        return config.admins.indexOf(localmatch[1]) != -1;
+    }
+    return false;
+
 }
 
 function sendHelp(event, room) {
@@ -92,9 +108,12 @@ function sendHelp(event, room) {
         "Your options:<br/><br/>\n\n" +
         "<b>!help</b> - this message<br/>\n" +
         "<b>!login [{env}]</b> - Get a login link for env - dev, stage, prod<br/>\n" +
+        "<b>!release</b> - Get the current release notes<br/>\n" +
+        "<b>!release [note|step|test]</b> - Add a release note, step, or test<br/>\n" +
         "<b>!state</b> - Print freelock project info for this room<br/>\n" +
         "<b>!state {item} {value}</b> - Set a freelock item to value<br/>\n" +
         "<b>!status [update] [{env}]</b> - print the version of an environment - dev, stage, prod or blank for all<br/>\n";
+
     matrixClient.sendHtmlNotice(room.roomId, body, body);
 }
 
@@ -241,6 +260,9 @@ function printStatus(event, room, body){
             msg = '<font color="red">Drush returned an error: ' + data + '</font>';
             matrixClient.sendHtmlNotice(room.roomId, msg, msg);
         });
+        drush.on('exit', function(code){
+           console.log('drush child exited with code '+code);
+        });
     } else {
         var envState, version, currEnv;
         if (env) {
@@ -273,6 +295,10 @@ function printStatus(event, room, body){
 
 function login(event, room, body) {
 
+    if (!canLogin(event.getSender())) {
+        matrixClient.sendNotice(room.roomId, 'Not authorized.');
+        return;
+    }
     var alias, state = room.currentState.getStateEvents(config.stateName, 'alias');
     alias = state.getContent().alias;
     var env, user = '';
@@ -316,9 +342,112 @@ function login(event, room, body) {
         matrixClient.sendHtmlNotice(room.roomId, msg, msg);
     });
 
+    drush.on('exit', function(code){
+        console.log('drush child exited with code '+code);
+    });
 }
 
 function siteVersion(event,room,body) {
+
+}
+
+
+function releaseNotes(event,room,body) {
+    var active, args, msg, newState, props, version, state = room.currentState.getStateEvents(config.releaseName,'');
+    if (state) {
+        props = state.getContent();
+        active = props.active;
+        version = props.version ? props.version : '';
+    }
+
+    args = parseArgs(body);
+    if (args[1] == 'create' || !active) {
+        if (args[1] == 'create' && args[2]) {
+            version = args[2];
+        } else if (version) {
+            version = version.replace(/\d+$/, function(n) { return ++n });
+        } else {
+            msg = '<font color="red">No previous version. Please provide a version number!</font>';
+            matrixClient.sendHtmlNotice(room.roomId, msg, msg);
+            return;
+        }
+        if (args[1] == 'create' || version) {
+            msg = 'Creating new release, version <b>'+version+'</b>';
+            matrixClient.sendHtmlNotice(room.roomId, msg, msg);
+            newState = {
+                active: true,
+                version: version,
+                notes: [],
+                steps: [],
+                tests: [],
+                cases: [],
+                commits: []
+            };
+
+            matrixClient.sendStateEvent(room.roomId, config.releaseName, newState)
+                .then(function(){
+                        matrixClient.sendNotice(room.roomId, 'New release created. ' + version);
+                    },
+                    function(code,data){
+                        var msg = '<font color="red">There was a problem processing this request: '+code;
+                        console.log('Error on setting state',code,data);
+                        matrixClient.sendHtmlNotice(room.roomId, msg, msg);
+
+                    });
+            return;
+        } else {
+            msg = '<font color="red">No previous version. Please provide a version number!</font>';
+            matrixClient.sendHtmlNotice(room.roomId, msg, msg);
+            return;
+
+        }
+
+    }
+    if (!args[1]) {
+        msg = '<h2>Release '+version +'</h2>\n' +
+            '<h3>Notes</h3>\n' +
+            '<ul><li>' + props.notes.join('</li><li>') +
+            '</li></ul>' +
+            '<h3>Deployment Steps</h3>\n' +
+            '<ul><li>' + props.steps.join('</li><li>') +
+            '</li></ul>' +
+            '<h3>Test on production after deploy</h3>\n' +
+            '<ul><li>' + props.tests.join('</li><li>') +
+            '</li></ul>' +
+            '<h3>Cases</h3>\n' +
+            '<ul><li>' + props.cases.join('</li><li>') +
+            '</li></ul>' +
+            '<h3>Commits</h3>\n' +
+            '<ul><li>' + props.commits.join('</li><li>') +
+            '</li></ul>';
+        matrixClient.sendHtmlMessage(room.roomId, msg, msg);
+        return;
+    }
+    var cmd = args[1];
+    switch (cmd) {
+        case 'note':
+        case 'test':
+        case 'step':
+        case 'case':
+        case 'commit':
+            msg = body.substring(args[0].length + cmd.length + 2);
+            props[cmd+'s'].push(msg);
+            matrixClient.sendStateEvent(room.roomId, config.releaseName, props)
+                .then(function(){
+                        matrixClient.sendNotice(room.roomId, 'New '+args[1]+' created. ' + msg);
+                    },
+                    function(code,data){
+                        var msg = '<font color="red">There was a problem processing this request: '+code;
+                        console.log('Error on setting state',code,data);
+                        matrixClient.sendHtmlNotice(room.roomId, msg, msg);
+
+                    });
+            break;
+        default:
+            msg = '<font color="red">Request not recognized. Recognized release commands: create, note, step, task, commit, case.</font>';
+            matrixClient.sendHtmlNotice(room.roomId, msg, msg);
+
+    }
 
 }
 
