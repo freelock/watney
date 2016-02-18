@@ -434,7 +434,7 @@ function releaseNotes(event,room,body) {
             props[cmd+'s'].push(msg);
             matrixClient.sendStateEvent(room.roomId, config.releaseName, props)
                 .then(function(){
-                        matrixClient.sendNotice(room.roomId, 'New '+args[1]+' created. ' + msg);
+                        matrixClient.sendNotice(room.roomId, 'Release '+cmd+' added to  ' + version);
                     },
                     function(code,data){
                         var msg = '<font color="red">There was a problem processing this request: '+code;
