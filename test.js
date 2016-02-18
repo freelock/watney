@@ -353,11 +353,12 @@ function siteVersion(event,room,body) {
 
 
 function releaseNotes(event,room,body) {
-    var active, args, msg, newState, props, version, state = room.currentState.getStateEvents(config.releaseName,'');
+    var active, args, currStatus, msg, newState, props, version, state = room.currentState.getStateEvents(config.releaseName,'');
     if (state) {
         props = state.getContent();
         active = props.active;
         version = props.version ? props.version : '';
+        currStatus = props.status ? props.status : 'dev';
     }
 
     args = parseArgs(body);
@@ -406,6 +407,7 @@ function releaseNotes(event,room,body) {
     }
     if (!args[1]) {
         msg = '<h2>Release '+version +'</h2>\n' +
+            '<h3>Status: '+ currStatus +'</h3>\n' +
             '<h3>Notes</h3>\n' +
             '<ul><li>' + props.notes.join('</li><li>') +
             '</li></ul>' +
@@ -426,8 +428,7 @@ function releaseNotes(event,room,body) {
     }
     var cmd = args[1];
     if (cmd == 'status' && !args[2]) {
-        var curStatus = props.status ? props.status : 'dev';
-        msg = '<font color="green">Status is <b>' + curStatus +'</b>';
+        msg = '<font color="green">Status is <b>' + currStatus +'</b>';
         matrixClient.sendHtmlNotice(room.roomId, msg, msg);
         return;
     }
