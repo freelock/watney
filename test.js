@@ -464,7 +464,7 @@ function releaseNotes(event,room,body) {
             break;
         case 'status':
             msg = body.substring(args[0].length + cmd.length + 2);
-            if (!currStatus.match(/(released|dev|stage)/)) {
+            if (!msg.match(/(released|dev|stage)/)) {
                 msg = '<font color="red">Valid statuses are: <b>dev, stage, or released</b>.</font>';
                 matrixClient.sendHtmlNotice(room.roomId, msg, msg);
                 return;
