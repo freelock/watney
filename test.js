@@ -378,6 +378,7 @@ function releaseNotes(event,room,body) {
             newState = {
                 active: true,
                 status: 'dev',
+                targetDate: '',
                 version: version,
                 notes: [],
                 steps: [],
@@ -437,6 +438,11 @@ function releaseNotes(event,room,body) {
         matrixClient.sendHtmlNotice(room.roomId, msg, msg);
         return;
     }
+    if (cmd != 'status' && currStatus.match(/released/)) {
+        msg = '<font color="red"><b>Release has shipped, and can no longer be modified.</b></font>';
+        matrixClient.sendHtmlNotice(room.roomId, msg, msg);
+        return;
+    }
     switch (cmd) {
         case 'note':
         case 'test':
@@ -458,6 +464,11 @@ function releaseNotes(event,room,body) {
             break;
         case 'status':
             msg = body.substring(args[0].length + cmd.length + 2);
+            if (!currStatus.match(/(released|dev|stage)/)) {
+                msg = '<font color="red">Valid statuses are: <b>dev, stage, or released</b>.</font>';
+                matrixClient.sendHtmlNotice(room.roomId, msg, msg);
+                return;
+            }
             props[cmd] = msg;
             matrixClient.sendStateEvent(room.roomId, config.releaseName, props)
                 .then(function(){
