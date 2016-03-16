@@ -450,17 +450,30 @@ function releaseNotes(event,room,body) {
         case 'case':
         case 'commit':
             msg = body.substring(args[0].length + cmd.length + 2);
-            props[cmd+'s'].push(msg);
+            var arr = msg.split("\n");
+            for (var i=0; i<arr.length; i++){
+                props[cmd+'s'].push(arr[i]);
+
             matrixClient.sendStateEvent(room.roomId, config.releaseName, props)
                 .then(function(){
                         matrixClient.sendNotice(room.roomId, 'Release '+cmd+' added to  ' + version);
                     },
-                    function(code,data){
-                        var msg = '<font color="red">There was a problem processing this request: '+code;
-                        console.log('Error on setting state',code,data);
-                        matrixClient.sendHtmlNotice(room.roomId, msg, msg);
+                function(data){
+                    if (data && data.errcode && data.errcode == 'M_LIMIT_EXCEEDED') {
+                        var retryAfter = data.data.retry_after_ms + 100;
+                        setTimeout(function(){
+                            matrixClient.sendStateEvent(room.roomId, config.stateName, envstate, 'envs')
+                                .then(function(){
+                                    msg = '<font color="green">Added ' + currEnv + ' to environments.</font>';
+                                    matrixClient.sendHtmlNotice(room.roomId, msg, msg);
+                                })
+                        }, retryAfter);
+                    } else {
+                        sendError(room, data);
 
-                    });
+                    }
+                });
+            }
             break;
         case 'status':
             msg = body.substring(args[0].length + cmd.length + 2);
