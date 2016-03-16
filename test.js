@@ -36,7 +36,8 @@ matrixClient.on("Room.timeline", function(event, room, toStartOfTimeline) {
     var matches, body = "";
     if (event.getType() === "m.room.message") {
         body = event.getContent().body;
-        matches = body.match(/^!([a-z]*)( .*)?$/);
+        // TIL: in JS regex, . does not match \n. To match any character including newlines, fastest is [^]*.
+        matches = body.match(/^!([a-z]*)( [^]*)?$/);
         if (matches) {
             switch (matches[1]) {
                 case 'help':
@@ -109,7 +110,7 @@ function sendHelp(event, room) {
         "<b>!help</b> - this message<br/>\n" +
         "<b>!login [{env}]</b> - Get a login link for env - dev, stage, prod<br/>\n" +
         "<b>!release</b> - Get the current release notes<br/>\n" +
-        "<b>!release [note|step|test|create|status]</b> - Add a release note, step, or test<br/>\n" +
+        "<b>!release [note|step|test|case|commit|create|status]</b> - Add a release note, step, or test<br/>\n" +
         "<b>!state</b> - Print freelock project info for this room<br/>\n" +
         "<b>!state {item} {value}</b> - Set a freelock item to value<br/>\n" +
         "<b>!status [update] [{env}]</b> - print the version of an environment - dev, stage, prod or blank for all<br/>\n";
