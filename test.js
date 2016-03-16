@@ -451,9 +451,9 @@ function releaseNotes(event,room,body) {
         case 'commit':
             msg = body.substring(args[0].length + cmd.length + 2);
             var arr = msg.split("\n");
-            for (var i=0; i<arr.length; i++){
-                props[cmd+'s'].push(arr[i]);
-
+            for (var i=0; i<arr.length; i++) {
+                props[cmd + 's'].push(arr[i]);
+            }
             matrixClient.sendStateEvent(room.roomId, config.releaseName, props)
                 .then(function(){
                         matrixClient.sendNotice(room.roomId, 'Release '+cmd+' added to  ' + version);
@@ -473,7 +473,7 @@ function releaseNotes(event,room,body) {
 
                     }
                 });
-            }
+            console.log(props);
             break;
         case 'status':
             msg = body.substring(args[0].length + cmd.length + 2);
