@@ -554,4 +554,4 @@ var parseArgs = function(str, lookForQuotes) {
     return args;
 }
 
-matrixClient.startClient(numMessagesToShow);  // messages for each room.
+matrixClient.startClient();  // messages for each room.

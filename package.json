@@ -1,7 +1,7 @@
 {
-  "name": "example-app",
-  "version": "0.0.0",
-  "description": "",
+  "name": "watney-bot",
+  "version": "0.0.1",
+  "description": "A Matrix bot for managing releases, deployments, etc",
   "main": "app.js",
   "scripts": {
   },
