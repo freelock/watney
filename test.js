@@ -3,10 +3,12 @@
 var config = require('./config');
 
 var sdk = require("matrix-js-sdk");
+var store = sdk.MatrixInMemoryStore();
 var matrixClient = sdk.createClient({
     baseUrl: "https://matrix.freelock.com:8448",
     accessToken: config.myAccessToken,
-    userId: config.myUserId
+    userId: config.myUserId,
+    store: store
 });
 var util = require('util');
 
@@ -16,9 +18,21 @@ var viewingRoom = null;
 var numMessagesToShow = 20;
 
 // set the room list after syncing.
-matrixClient.on("syncComplete", function() {
-    setRoomList();
-    console.log('Startup complete.');
+matrixClient.on("sync", function(state, prevState, data) {
+    switch (state) {
+        case "ERROR":
+            // update UI to say "Connection Lost"
+            break;
+        case "SYNCING":
+            // update UI to remove any "Connection Lost" message
+            break;
+        case "PREPARED":
+            // the client instance is ready to be queried.
+            setRoomList();
+            console.log('Startup complete.');
+            break;
+    }
+
 });
 
 matrixClient.on("Room", function() {
@@ -54,6 +68,9 @@ matrixClient.on("Room.timeline", function(event, room, toStartOfTimeline) {
                     break;
                 case 'status':
                     printStatus(event, room, body);
+                    break;
+                case 'room':
+                    printRooms(event, room, body);
                     break;
             }
         }
@@ -525,6 +542,14 @@ matrixClient.on("RoomMember.membership", function(event, member) {
  */
 function exec_drush(args){
 
+}
+
+function printRooms(event, room, body){
+
+    var msg = '<font color="red">No previous version. Please provide a version number!</font>';
+    matrixClient.sendHtmlNotice(room.roomId, msg, msg);
+    console.log(roomList);
+    return;
 }
 
 function sendError(room, data) {
