@@ -13,9 +13,9 @@ var matrixClient = sdk.createClient({
 var util = require('util');
 
 // Data structures
-var roomList = [];
+var roomList = [], roomsByAlias = {};
 var viewingRoom = null;
-var numMessagesToShow = 20;
+var numMessagesToShow = 1;
 
 // set the room list after syncing.
 matrixClient.on("sync", function(state, prevState, data) {
@@ -79,7 +79,18 @@ matrixClient.on("Room.timeline", function(event, room, toStartOfTimeline) {
 
 
 function setRoomList() {
+    var i, room, state, alias;
     roomList = matrixClient.getRooms();
+    for (i=0; i< roomList.length; i++){
+        room=roomList[i];
+        state = room.currentState.getStateEvents(config.stateName, 'alias');
+        if (state) {
+            alias = state.getContent().alias;
+            if (alias) {
+                roomsByAlias[alias] = room.name;
+            }
+        }
+    }
     roomList.sort(function(a,b) {
         // < 0 = a comes first (lower index) - we want high indexes = newer
         var aMsg = a.timeline[a.timeline.length-1];
@@ -525,7 +536,7 @@ function releaseNotes(event,room,body) {
  * Automatically join room when invited
  */
 matrixClient.on("RoomMember.membership", function(event, member) {
-    if (isAdmin(event.event.user_id)) {
+    if (isAdmin(event.getSender())) {
 
     if (member.membership === "invite" && member.userId === config.myUserId) {
         matrixClient.joinRoom(member.roomId).done(function() {
@@ -545,11 +556,13 @@ function exec_drush(args){
 }
 
 function printRooms(event, room, body){
-
-    var msg = '<font color="red">No previous version. Please provide a version number!</font>';
+    var roomHtml = [], msg, i;
+    for (i=0; i<roomList.length;i++) {
+        roomHtml.push(roomList[i].name);
+    }
+    msg = "<ul><li>" + roomHtml.join("</li>\n<li>") + "</li></ul>";
     matrixClient.sendHtmlNotice(room.roomId, msg, msg);
-    console.log(roomList);
-    return;
+    console.log(roomsByAlias);
 }
 
 function sendError(room, data) {
@@ -579,4 +592,6 @@ var parseArgs = function(str, lookForQuotes) {
     return args;
 }
 
-matrixClient.startClient();  // messages for each room.
+matrixClient.startClient({
+    initialSyncLimit: numMessagesToShow
+});  // messages for each room.
