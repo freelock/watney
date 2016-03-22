@@ -36,7 +36,8 @@ matrixClient.on("Room.timeline", function(event, room, toStartOfTimeline) {
     var matches, body = "";
     if (event.getType() === "m.room.message") {
         body = event.getContent().body;
-        matches = body.match(/^!([a-z]*)( .*)?$/);
+        // TIL: in JS regex, . does not match \n. To match any character including newlines, fastest is [^]*.
+        matches = body.match(/^!([a-z]*)( [^]*)?$/);
         if (matches) {
             switch (matches[1]) {
                 case 'help':
@@ -109,7 +110,7 @@ function sendHelp(event, room) {
         "<b>!help</b> - this message<br/>\n" +
         "<b>!login [{env}]</b> - Get a login link for env - dev, stage, prod<br/>\n" +
         "<b>!release</b> - Get the current release notes<br/>\n" +
-        "<b>!release [note|step|test|create|status]</b> - Add a release note, step, or test<br/>\n" +
+        "<b>!release [note|step|test|case|commit|create|status]</b> - Add a release note, step, or test<br/>\n" +
         "<b>!state</b> - Print freelock project info for this room<br/>\n" +
         "<b>!state {item} {value}</b> - Set a freelock item to value<br/>\n" +
         "<b>!status [update] [{env}]</b> - print the version of an environment - dev, stage, prod or blank for all<br/>\n";
@@ -450,17 +451,30 @@ function releaseNotes(event,room,body) {
         case 'case':
         case 'commit':
             msg = body.substring(args[0].length + cmd.length + 2);
-            props[cmd+'s'].push(msg);
+            var arr = msg.split("\n");
+            for (var i=0; i<arr.length; i++) {
+                props[cmd + 's'].push(arr[i]);
+            }
             matrixClient.sendStateEvent(room.roomId, config.releaseName, props)
                 .then(function(){
                         matrixClient.sendNotice(room.roomId, 'Release '+cmd+' added to  ' + version);
                     },
-                    function(code,data){
-                        var msg = '<font color="red">There was a problem processing this request: '+code;
-                        console.log('Error on setting state',code,data);
-                        matrixClient.sendHtmlNotice(room.roomId, msg, msg);
+                function(data){
+                    if (data && data.errcode && data.errcode == 'M_LIMIT_EXCEEDED') {
+                        var retryAfter = data.data.retry_after_ms + 100;
+                        setTimeout(function(){
+                            matrixClient.sendStateEvent(room.roomId, config.stateName, envstate, 'envs')
+                                .then(function(){
+                                    msg = '<font color="green">Added ' + currEnv + ' to environments.</font>';
+                                    matrixClient.sendHtmlNotice(room.roomId, msg, msg);
+                                })
+                        }, retryAfter);
+                    } else {
+                        sendError(room, data);
 
-                    });
+                    }
+                });
+            console.log(props);
             break;
         case 'status':
             msg = body.substring(args[0].length + cmd.length + 2);
