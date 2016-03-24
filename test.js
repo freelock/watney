@@ -590,7 +590,7 @@ var parseArgs = function(str, lookForQuotes) {
 
     args.push(part);
     return args;
-}
+};
 
 matrixClient.startClient({
     initialSyncLimit: numMessagesToShow
