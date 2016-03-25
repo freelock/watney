@@ -73,7 +73,7 @@ matrixClient.on("Room.timeline", function(event, room, toStartOfTimeline) {
                     printRooms(event, room, body);
                     break;
             }
-        } else if (event.getSender() == '@git:matrix.freelock.com') {
+        } else if (event.getSender() == '@gitolite:matrix.freelock.com') {
             gitCommit(event, room, body);
         }
     }
