@@ -73,6 +73,8 @@ matrixClient.on("Room.timeline", function(event, room, toStartOfTimeline) {
                     printRooms(event, room, body);
                     break;
             }
+        } else if (event.getSender() == '@git:matrix.freelock.com') {
+            gitCommit(event, room, body);
         }
     }
 });
@@ -530,6 +532,35 @@ function releaseNotes(event,room,body) {
 
     }
 
+}
+
+/**
+ * Fire a salt event
+ * @param event
+ * @param room
+ * @param body
+ *
+ * Git message: "alias: refs/heads/branchname updated. new: 858b385a8a06... old: 3e1826ee2.... .
+ */
+function gitCommit(event, room, body) {
+   var regexp = /^(.*):\ (.*([^\/]*))\ updated\.\ new:\ (.*)\ old:\ (.*)\ .$/;
+   var matches = body.match(regexp);
+    var data = {
+        old: matches[5],
+        new: matches[4],
+        ref: matches[2],
+        branch: matches[3]
+    }
+
+    var exec = require('child_process').exec;
+    exec("sudo /usr/bin/salt-call event.fire_master '"+data.toString()+"' fl/git/"+matches[1],
+    function(err, stdout, stderr){
+        if (!err) {
+            console.log(stdout);
+        } else {
+            console.log('Error!', err, stderr);
+        }
+    });
 }
 
 /**
