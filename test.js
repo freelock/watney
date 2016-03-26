@@ -540,6 +540,9 @@ function releaseNotes(event,room,body) {
  * @param room
  * @param body
  *
+ * To make this work, the user account running this process should have a sudo entry allowing nopassword access to
+ * salt-call event.fire_master.
+ * 
  * Git message: "alias: refs/heads/branchname updated. new: 858b385a8a06... old: 3e1826ee2.... .
  */
 function gitCommit(event, room, body) {
@@ -551,7 +554,16 @@ function gitCommit(event, room, body) {
         ref: matches[2],
         branch: matches[3]
     };
+    var sudo = require('sudo');
+    var call = sudo(['/usr/bin/salt-call', 'event.fire_master', JSON.stringify(data), 'fl/git/'+matches[1]]);
 
+    call.stdout.on('data', function(data){
+        console.log(data);
+    });
+    call.stderr.on('data', function(data){
+        console.log(data);
+    });
+    return;
     var exec = require('child_process').exec;
     exec("sudo /usr/bin/salt-call event.fire_master '"+ JSON.stringify(data)+"' fl/git/"+matches[1],
     function(err, stdout, stderr){
