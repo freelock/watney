@@ -10,6 +10,7 @@
   "dependencies": {
     "underscore": "",
     "matrix-js-sdk": "0.4.2",
-    "sudo": ""
+    "sudo": "",
+    "node-schedule": ""
   }
 }
