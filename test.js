@@ -563,16 +563,6 @@ function gitCommit(event, room, body) {
     call.stderr.on('data', function(data){
         console.log(data);
     });
-    return;
-    var exec = require('child_process').exec;
-    exec("sudo /usr/bin/salt-call event.fire_master '"+ JSON.stringify(data)+"' fl/git/"+matches[1],
-    function(err, stdout, stderr){
-        if (!err) {
-            console.log(stdout);
-        } else {
-            console.log('Error!', err, stderr);
-        }
-    });
 }
 
 /**
