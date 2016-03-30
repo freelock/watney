@@ -42,6 +42,9 @@ var container = {
     // Hash of special rooms to listen to for extra functionality
     roomCommands: {},
 
+    // Handles for scheduled jobs, should cancel these before overwriting
+    scheduledJobs: {},
+
     // Send method, set in matrixUtils
     send: null,
     isAdmin: null,
