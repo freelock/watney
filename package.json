@@ -11,6 +11,7 @@
     "underscore": "",
     "matrix-js-sdk": "0.4.2",
     "sudo": "",
-    "node-schedule": ""
+    "node-schedule": "",
+    "sugar": ""
   }
 }
