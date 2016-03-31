@@ -51,10 +51,17 @@ var container = {
     // callbacks when roomlist changes, used to populate scheduledJobs...
     roomUpdates: [],
 
-    // Send method, set in matrixUtils
+    /**
+     * The methods below are added by matrixUtils on startup, and other modules may inject dependencies on them.
+     */
+    // Send method, set in matrixUtils, used to send a message to a room
     send: null,
+    // Auth method, used to determine if event sender is an admin
     isAdmin: null,
+    // Auth method, used to determine if event sender is allowed to execute a drush command
     canLogin: null,
+    // command dispatcher, used to call a matching bangCommend on the container
+    parseBang: null,
 
     mx: matrixClient,
     config: config,
@@ -104,16 +111,11 @@ matrixClient.on("Room.timeline", function(event, room, toStartOfTimeline) {
         return; // don't print paginated results
     }
 
-    var matches, cb, sender, room, body = "";
+    var match, sender, room, body = "";
     if (event.getType() === "m.room.message") {
         body = event.getContent().body;
-        // TIL: in JS regex, . does not match \n. To match any character including newlines, fastest is [^]*.
-        matches = body.match(/^!([a-z]*)( [^]*)?$/);
-        if (matches) {
-            cb = container.bangCommands[matches[1]];
-            if (cb) {
-                cb.cb(room, body, event);
-            }
+        if (match = container.parseBang(room, body, event)){
+            console.log(match + ' fired.');
         } else {
             sender = event.getSender();
             if (container.senderCommands[sender]) {
