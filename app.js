@@ -22,6 +22,9 @@ var matrixClient = sdk.createClient({
 });
 //var util = require('util');
 
+// Syntactic sugar, including date parsing
+require('sugar');
+
 // Global Data structures
 var container = {
     // Array of all known rooms
@@ -44,6 +47,9 @@ var container = {
 
     // Handles for scheduled jobs, should cancel these before overwriting
     scheduledJobs: {},
+
+    // callbacks when roomlist changes, used to populate scheduledJobs...
+    roomUpdates: [],
 
     // Send method, set in matrixUtils
     send: null,
