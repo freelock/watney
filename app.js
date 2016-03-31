@@ -22,7 +22,7 @@ var matrixClient = sdk.createClient({
 });
 //var util = require('util');
 
-// Syntactic sugar, including date parsing
+// Syntactic sugar, including date parsing... see http://sugarjs.com
 require('sugar');
 
 // Global Data structures
@@ -112,13 +112,12 @@ matrixClient.on("Room.timeline", function(event, room, toStartOfTimeline) {
         if (matches) {
             cb = container.bangCommands[matches[1]];
             if (cb) {
-                // TODO: Handle help
-                cb.cb(event, room, body);
+                cb.cb(room, body, event);
             }
         } else {
             sender = event.getSender();
             if (container.senderCommands[sender]) {
-                container.senderCommands[sender](event, room, body);
+                container.senderCommands[sender](room, body, event);
             }
         }
     }
