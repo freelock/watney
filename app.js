@@ -77,6 +77,7 @@ require('./lib/drupalLogin').setup(container);
 require('./lib/release').setup(container);
 require('./lib/drupalState').setup(container);
 require('./lib/siteStatus').setup(container);
+require('./lib/triggerConcourse').setup(container);
 
 // senderCommands
 require('./lib/fireSalt').setup(container);
