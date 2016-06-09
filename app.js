@@ -65,7 +65,8 @@ var container = {
 
     mx: matrixClient,
     config: config,
-    matrixUtils: null
+    matrixUtils: null,
+    PubSub: require('pubsub-js')
 };
 
 var numMessagesToShow = 1;
@@ -77,10 +78,10 @@ require('./lib/drupalLogin').setup(container);
 require('./lib/release').setup(container);
 require('./lib/drupalState').setup(container);
 require('./lib/siteStatus').setup(container);
-require('./lib/triggerConcourse').setup(container);
+require('./lib/concoursePipelines').setup(container);
 
 // senderCommands
-require('./lib/fireSalt').setup(container);
+require('./lib/commitActions').setup(container);
 
 matrixClient.on("sync", function(state, prevState, data) {
    switch (state) {
