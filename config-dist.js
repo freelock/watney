@@ -5,6 +5,7 @@ var config = {
     admins: ['don','chris','rafael','john'],
     stateName: 'com.freelock.project',
     releaseName: 'com.freelock.release',
+    reminderName: 'com.freelock.reminder',
     concourseDir: '/path/to/pipelines',
     concoursePipelineCmd: './set_pipeline.sh',
     concourseUser: 'username',
