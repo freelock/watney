@@ -10,7 +10,15 @@ var config = {
     concoursePipelineCmd: './set_pipeline.sh',
     concourseUser: 'username',
     concoursePass: 'password',
-    concourseCredentials: '~/credentials.yaml'
+    concourseCredentials: '~/credentials.yaml',
+    auriga: {
+        auth: 'username:pass',
+        hostname: 'host.freelock.com',
+        protocol: 'https:',
+        path: '/auriga/store/',
+        port: 443
+    },
+    homeroom: '!hXysgSAERKRcnuFn:matrix.freelock.com'
 };
 
 module.exports = config;

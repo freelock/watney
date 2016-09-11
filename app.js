@@ -79,6 +79,7 @@ require('./lib/release').setup(container);
 require('./lib/drupalState').setup(container);
 require('./lib/siteStatus').setup(container);
 require('./lib/concoursePipelines').setup(container);
+require('./lib/auriga').setup(container);
 
 // senderCommands
 require('./lib/commitActions').setup(container);
