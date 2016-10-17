@@ -80,6 +80,8 @@ require('./lib/drupalState').setup(container);
 require('./lib/siteStatus').setup(container);
 require('./lib/concoursePipelines').setup(container);
 require('./lib/auriga').setup(container);
+require('./lib/taiga').setup(container);
+require('./lib/remind').setup(container);
 
 // senderCommands
 require('./lib/commitActions').setup(container);
