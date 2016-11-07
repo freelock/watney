@@ -19,6 +19,7 @@ var config = {
         port: 443
     },
     homeroom: '!hXysgSAERKRcnuFn:matrix.freelock.com'
+    deployroom: '!hXysgSAERKRcnuFn:matrix.freelock.com'
 };
 
 module.exports = config;
