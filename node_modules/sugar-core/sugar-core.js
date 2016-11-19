@@ -1,5 +1,5 @@
 /*
- *  Sugar v2.0.0
+ *  Sugar v2.0.2
  *
  *  Freely distributable and licensed under the MIT-style license.
  *  Copyright (c) Andrew Plummer
@@ -94,9 +94,9 @@
   }
 
   /***
-   * @method createNamespace(<name>)
-   * @returns Namespace
-   * @global
+   * @method createNamespace(name)
+   * @returns SugarNamespace
+   * @namespace Sugar
    * @short Creates a new Sugar namespace.
    * @extra This method is for plugin developers who want to define methods to be
    *        used with natives that Sugar does not handle by default. The new
@@ -109,6 +109,8 @@
    *
    *   Sugar.createNamespace('Boolean');
    *
+   * @param {string} name - The namespace name.
+   *
    ***/
   function createNamespace(name) {
 
@@ -119,14 +121,13 @@
     var sugarNamespace = getNewChainableClass(name, true);
 
     /***
-     * @method extend([options])
+     * @method extend([opts])
      * @returns Sugar
-     * @global
-     * @namespace
+     * @namespace Sugar
      * @short Extends Sugar defined methods onto natives.
      * @extra This method can be called on individual namespaces like
      *        `Sugar.Array` or on the `Sugar` global itself, in which case
-     *        [options] will be forwarded to each `extend` call. For more,
+     *        [opts] will be forwarded to each `extend` call. For more,
      *        see `extending`.
      *
      * @options
@@ -158,6 +159,22 @@
      *
      *   Sugar.Array.extend();
      *   Sugar.extend();
+     *
+     * @option {Array<string>} [methods]
+     * @option {Array<string|NativeConstructor>} [except]
+     * @option {Array<NativeConstructor>} [namespaces]
+     * @option {boolean} [enhance]
+     * @option {boolean} [enhanceString]
+     * @option {boolean} [enhanceArray]
+     * @option {boolean} [objectPrototype]
+     * @param {ExtendOptions} [opts]
+     *
+     ***
+     * @method extend([opts])
+     * @returns SugarNamespace
+     * @namespace SugarNamespace
+     * @short Extends Sugar defined methods for a specific namespace onto natives.
+     * @param {ExtendOptions} [opts]
      *
      ***/
     var extend = function (opts) {
@@ -255,7 +272,7 @@
         // methods, so add a flag here to check later.
         setProperty(sugarNamespace, 'active', true);
       }
-      return Sugar;
+      return sugarNamespace;
     };
 
     function defineWithOptionCollect(methodName, instance, args) {
@@ -267,9 +284,9 @@
     }
 
     /***
-     * @method defineStatic(...)
-     * @returns Namespace
-     * @namespace
+     * @method defineStatic(methods)
+     * @returns SugarNamespace
+     * @namespace SugarNamespace
      * @short Defines static methods on the namespace that can later be extended
      *        onto the native globals.
      * @extra Accepts either a single object mapping names to functions, or name
@@ -285,13 +302,17 @@
      *     }
      *   });
      *
+     * @signature defineStatic(methodName, methodFn)
+     * @param {Object} methods - Methods to be defined.
+     * @param {string} methodName - Name of a single method to be defined.
+     * @param {Function} methodFn - Function body of a single method to be defined.
      ***/
     defineWithOptionCollect('defineStatic', STATIC);
 
     /***
-     * @method defineInstance(...)
-     * @returns Namespace
-     * @namespace
+     * @method defineInstance(methods)
+     * @returns SugarNamespace
+     * @namespace SugarNamespace
      * @short Defines methods on the namespace that can later be extended as
      *        instance methods onto the native prototype.
      * @extra Accepts either a single object mapping names to functions, or name
@@ -315,13 +336,17 @@
      *     }
      *   });
      *
+     * @signature defineInstance(methodName, methodFn)
+     * @param {Object} methods - Methods to be defined.
+     * @param {string} methodName - Name of a single method to be defined.
+     * @param {Function} methodFn - Function body of a single method to be defined.
      ***/
     defineWithOptionCollect('defineInstance', INSTANCE);
 
     /***
-     * @method defineInstanceAndStatic(...)
-     * @returns Namespace
-     * @namespace
+     * @method defineInstanceAndStatic(methods)
+     * @returns SugarNamespace
+     * @namespace SugarNamespace
      * @short A shortcut to define both static and instance methods on the namespace.
      * @extra This method is intended for use with `Object` instance methods. Sugar
      *        will not map any methods to `Object.prototype` by default, so defining
@@ -335,14 +360,18 @@
      *     }
      *   });
      *
+     * @signature defineInstanceAndStatic(methodName, methodFn)
+     * @param {Object} methods - Methods to be defined.
+     * @param {string} methodName - Name of a single method to be defined.
+     * @param {Function} methodFn - Function body of a single method to be defined.
      ***/
     defineWithOptionCollect('defineInstanceAndStatic', INSTANCE | STATIC);
 
 
     /***
-     * @method defineStaticWithArguments(...)
-     * @returns Namespace
-     * @namespace
+     * @method defineStaticWithArguments(methods)
+     * @returns SugarNamespace
+     * @namespace SugarNamespace
      * @short Defines static methods that collect arguments.
      * @extra This method is identical to `defineStatic`, except that when defined
      *        methods are called, they will collect any arguments past `n - 1`,
@@ -361,13 +390,17 @@
      *     }
      *   });
      *
+     * @signature defineStaticWithArguments(methodName, methodFn)
+     * @param {Object} methods - Methods to be defined.
+     * @param {string} methodName - Name of a single method to be defined.
+     * @param {Function} methodFn - Function body of a single method to be defined.
      ***/
     defineWithOptionCollect('defineStaticWithArguments', STATIC, true);
 
     /***
-     * @method defineInstanceWithArguments(...)
-     * @returns Namespace
-     * @namespace
+     * @method defineInstanceWithArguments(methods)
+     * @returns SugarNamespace
+     * @namespace SugarNamespace
      * @short Defines instance methods that collect arguments.
      * @extra This method is identical to `defineInstance`, except that when
      *        defined methods are called, they will collect any arguments past
@@ -386,13 +419,17 @@
      *     }
      *   });
      *
+     * @signature defineInstanceWithArguments(methodName, methodFn)
+     * @param {Object} methods - Methods to be defined.
+     * @param {string} methodName - Name of a single method to be defined.
+     * @param {Function} methodFn - Function body of a single method to be defined.
      ***/
     defineWithOptionCollect('defineInstanceWithArguments', INSTANCE, true);
 
     /***
-     * @method defineStaticPolyfill(...)
-     * @returns Namespace
-     * @namespace
+     * @method defineStaticPolyfill(methods)
+     * @returns SugarNamespace
+     * @namespace SugarNamespace
      * @short Defines static methods that are mapped onto the native if they do
      *        not already exist.
      * @extra Intended only for use creating polyfills that follow the ECMAScript
@@ -407,16 +444,21 @@
      *     }
      *   });
      *
+     * @signature defineStaticPolyfill(methodName, methodFn)
+     * @param {Object} methods - Methods to be defined.
+     * @param {string} methodName - Name of a single method to be defined.
+     * @param {Function} methodFn - Function body of a single method to be defined.
      ***/
     setProperty(sugarNamespace, 'defineStaticPolyfill', function(arg1, arg2, arg3) {
       var opts = collectDefineOptions(arg1, arg2, arg3);
       extendNative(globalContext[name], opts.methods, true, opts.last);
+      return sugarNamespace;
     });
 
     /***
-     * @method defineInstancePolyfill(...)
-     * @returns Namespace
-     * @namespace
+     * @method defineInstancePolyfill(methods)
+     * @returns SugarNamespace
+     * @namespace SugarNamespace
      * @short Defines instance methods that are mapped onto the native prototype
      *        if they do not already exist.
      * @extra Intended only for use creating polyfills that follow the ECMAScript
@@ -434,6 +476,10 @@
      *     }
      *   });
      *
+     * @signature defineInstancePolyfill(methodName, methodFn)
+     * @param {Object} methods - Methods to be defined.
+     * @param {string} methodName - Name of a single method to be defined.
+     * @param {Function} methodFn - Function body of a single method to be defined.
      ***/
     setProperty(sugarNamespace, 'defineInstancePolyfill', function(arg1, arg2, arg3) {
       var opts = collectDefineOptions(arg1, arg2, arg3);
@@ -442,22 +488,27 @@
       forEachProperty(opts.methods, function(fn, methodName) {
         defineChainableMethod(sugarNamespace, methodName, fn);
       });
+      return sugarNamespace;
     });
 
     /***
-     * @method alias(<toName>, <fromName>)
-     * @returns Namespace
-     * @namespace
+     * @method alias(toName, from)
+     * @returns SugarNamespace
+     * @namespace SugarNamespace
      * @short Aliases one Sugar method to another.
      *
      * @example
      *
      *   Sugar.Array.alias('all', 'every');
      *
+     * @signature alias(toName, fn)
+     * @param {string} toName - Name for new method.
+     * @param {string|Function} from - Method to alias, or string shortcut.
      ***/
     setProperty(sugarNamespace, 'alias', function(name, source) {
       var method = typeof source === 'string' ? sugarNamespace[source] : source;
       setMethod(sugarNamespace, name, method);
+      return sugarNamespace;
     });
 
     // Each namespace can extend only itself through its .extend method.
