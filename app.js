@@ -69,7 +69,7 @@ var container = {
     PubSub: require('pubsub-js')
 };
 
-var numMessagesToShow = 1;
+var numMessagesToShow = 10;
 
 require('./lib/matrixUtils').setup(container);
 
@@ -86,6 +86,8 @@ require('./lib/remind').setup(container);
 // senderCommands
 require('./lib/commitActions').setup(container);
 
+var syncComplete = false;
+
 matrixClient.on("sync", function(state, prevState, data) {
    switch (state) {
        case "ERROR":
@@ -99,19 +101,24 @@ matrixClient.on("sync", function(state, prevState, data) {
            // the client instance is ready to be queried.
            container.matrixUtils.setRoomList();
            console.log('Startup complete.');
+           syncComplete = true;
+           matrixClient.on("Room.timeline", readTimeline);
            break;
+       default:
+           console.log('sync:',state,prevState,data);
    }
 });
 
 
 
-matrixClient.on("Room", function(){
+matrixClient.on("Room", function(room){
+console.log('processing room:', room.roomId, room.name);
     container.matrixUtils.setRoomList();
 
 });
 
 // search for messages I understand
-matrixClient.on("Room.timeline", function(event, room, toStartOfTimeline) {
+var readTimeline = function(event, room, toStartOfTimeline) {
     if (toStartOfTimeline) {
         return; // don't print paginated results
     }
@@ -128,8 +135,16 @@ matrixClient.on("Room.timeline", function(event, room, toStartOfTimeline) {
             }
         }
     }
-});
+    if (event.getType() == 'com.freelock.project') {
+      console.log('timeline:',event);
+    }
+};
 
+matrixClient.on("event", function(event) {
+//    if (event.getType() == 'com.freelock.project') {
+//      console.log('event:', event);
+//    }
+});
 
 /**
  * Automatically join room when invited
@@ -144,7 +159,6 @@ matrixClient.on("RoomMember.membership", function(event, member) {
         }
     }
 });
-
 
 matrixClient.startClient({
     initialSyncLimit: numMessagesToShow
