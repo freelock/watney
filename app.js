@@ -69,7 +69,7 @@ var container = {
     PubSub: require('pubsub-js')
 };
 
-var numMessagesToShow = 10;
+var numMessagesToShow = 20;
 
 require('./lib/matrixUtils').setup(container);
 
