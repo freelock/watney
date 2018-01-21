@@ -10,11 +10,11 @@
  * the core Matrix client.
  */
 
-var config = require('./config');
+const config = require('./config');
 
-var sdk = require("matrix-js-sdk");
-var store = sdk.MatrixInMemoryStore();
-var matrixClient = sdk.createClient({
+const sdk = require("matrix-js-sdk");
+const store = sdk.MatrixInMemoryStore();
+const matrixClient = sdk.createClient({
     baseUrl: "https://matrix.freelock.com:8448",
     accessToken: config.myAccessToken,
     userId: config.myUserId,
@@ -26,7 +26,7 @@ var matrixClient = sdk.createClient({
 require('sugar');
 
 // Global Data structures
-var container = {
+let container = {
     // Array of all known rooms
     roomList: [],
 
@@ -69,7 +69,7 @@ var container = {
     PubSub: require('pubsub-js')
 };
 
-var numMessagesToShow = 20;
+const numMessagesToShow = 20;
 
 require('./lib/matrixUtils').setup(container);
 
@@ -86,7 +86,7 @@ require('./lib/remind').setup(container);
 // senderCommands
 require('./lib/commitActions').setup(container);
 
-var syncComplete = false;
+let syncComplete = false;
 
 matrixClient.on("sync", function(state, prevState, data) {
    switch (state) {
