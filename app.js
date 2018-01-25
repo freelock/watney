@@ -105,7 +105,7 @@ matrixClient.on("sync", function(state, prevState, data) {
            matrixClient.on("Room.timeline", readTimeline);
            break;
        default:
-           console.log('sync:',state,prevState,data);
+           //console.log('sync:',state,prevState,data);
    }
 });
 
@@ -136,7 +136,7 @@ var readTimeline = function(event, room, toStartOfTimeline) {
         }
     }
     if (event.getType() == 'com.freelock.project') {
-      console.log('timeline:',event);
+      //console.log('timeline:',event);
     }
 };
 
