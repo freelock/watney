@@ -118,12 +118,12 @@ console.log('processing room:', room.roomId, room.name);
 });
 
 // search for messages I understand
-var readTimeline = function(event, room, toStartOfTimeline) {
+const readTimeline = function(event, room, toStartOfTimeline) {
     if (toStartOfTimeline) {
         return; // don't print paginated results
     }
 
-    var match, sender, room, body = "";
+    let match, sender, body = "";
     if (event.getType() === "m.room.message") {
         body = event.getContent().body;
         if (match = container.parseBang(room, body, event)){
@@ -135,7 +135,12 @@ var readTimeline = function(event, room, toStartOfTimeline) {
             }
         }
     }
-    if (event.getType() == 'com.freelock.project') {
+    if (event.getType() == container.config.stateName || event.getType() == container.config.releaseName) {
+        let data = {
+          room: room,
+          event: event
+        };
+        container.PubSub.publish('project-state', data);
       //console.log('timeline:',event);
     }
 };
