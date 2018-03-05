@@ -7,6 +7,7 @@ var config = {
     stateName: 'com.freelock.project',
     releaseName: 'com.freelock.release',
     defaultReleaseManager: 'john',
+    defaultProjectManager: 'don',
     reminderName: 'com.freelock.reminder',
     concourseDir: '/path/to/pipelines',
     concoursePipelineCmd: './set_pipeline.sh',
