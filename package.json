@@ -13,7 +13,7 @@
     "pubsub-js": "^1.6.0",
     "sudo": "",
     "sugar": "~2.0.4",
-    "textversionjs": "^1.0.2",
-    "underscore": ""
+    "textversionjs": "^1.1.1",
+    "underscore": "^1.9.1"
   }
 }
