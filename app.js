@@ -74,14 +74,7 @@ const numMessagesToShow = 20;
 require('./lib/matrixUtils').setup(container);
 
 // bangCommands
-require('./lib/drupalLogin').setup(container);
-require('./lib/release').setup(container);
-require('./lib/drupalState').setup(container);
-require('./lib/siteStatus').setup(container);
-require('./lib/concoursePipelines').setup(container);
-require('./lib/auriga').setup(container);
-require('./lib/taiga').setup(container);
-require('./lib/remind').setup(container);
+container.config.modules.map(module => require(module).setup(container));
 
 // senderCommands
 require('./lib/commitActions').setup(container);

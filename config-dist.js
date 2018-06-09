@@ -28,7 +28,19 @@ var config = {
         auriga: 'https://intranet.freelock.com/auriga2/task/{id}',
         carina: 'https://projects.freelock.com/{alias}/node/{id}',
         atrium: 'https://intranet.freelock.com/atrium/{alias}/node/{id}'
-    }
+    },
+    notelifyMergeFile: '',
+    modules: [
+        './lib/drupalLogin',
+        './lib/release',
+        './lib/drupalState',
+        './lib/siteStatus',
+        './lib/concoursePipelines',
+        './lib/auriga',
+        './lib/taiga',
+        './lib/remind',
+        './lib/notelify'
+    ]
 };
 
 module.exports = config;
