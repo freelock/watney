@@ -9,7 +9,12 @@
   "dependencies": {
     "easypattern": "",
     "matrix-js-sdk": "^0.10.3",
+    "mjml": "^4.0.5",
+    "mustache": "^2.3.0",
     "node-schedule": "^1.3.0",
+    "nodemailer": "^4.6.5",
+    "nodemailer-html-to-text": "^2.1.0",
+    "papaparse": "^4.5.0",
     "pubsub-js": "^1.6.0",
     "sudo": "",
     "sugar": "~2.0.4",
