@@ -30,6 +30,18 @@ var config = {
         atrium: 'https://intranet.freelock.com/atrium/{alias}/node/{id}'
     },
     notelifyMergeFile: '',
+    notelifyFrom: 'sender@example.com',
+    notelifyCC: 'email@example.com',
+    mjmlPath: '/path/to/template/dir',
+    nodemailerConfig: {
+        host: 'mailject',
+        port: 25,
+        secure: false
+        // auth: {
+        //    user: 'user',
+        //    pass: 'pass'
+        // }
+    },
     modules: [
         './lib/drupalLogin',
         './lib/release',
