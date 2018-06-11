@@ -33,8 +33,21 @@ var config = {
     notelifyFrom: 'sender@example.com',
     notelifyCC: 'email@example.com',
     mjmlPath: '/path/to/template/dir',
-    nodemailerConfig: {
-        host: 'mailject',
+    releasePolicies: {
+        'R': 'Notify on release',
+        '2H': '2 hour notification',
+        '1D': '1 day notification',
+        '2D': '2 day notification',
+        'NO': 'Notify and hold',
+
+        'WDA': 'Weekday AM',
+        'WDP': 'Weekday PM',
+        'WDE': 'Weekday Eve',
+        'WEE': 'Weekend Eve',
+        'A': 'Anytime'
+    },
+    nodeMailerConfig: {
+        host: 'mailjet',
         port: 25,
         secure: false
         // auth: {
