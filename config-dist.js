@@ -34,17 +34,16 @@ var config = {
     notelifyCC: 'email@example.com',
     mjmlPath: '/path/to/template/dir',
     releasePolicies: {
-        'R': 'Notify on release',
-        '2H': '2 hour notification',
-        '1D': '1 day notification',
-        '2D': '2 day notification',
-        'NO': 'Notify and hold',
-
-        'WDA': 'Weekday AM',
-        'WDP': 'Weekday PM',
-        'WDE': 'Weekday Eve',
-        'WEE': 'Weekend Eve',
-        'A': 'Anytime'
+        'R': {policyType: 'notif', short: 'Notify on release'},
+        '2H': {policyType: 'notif', short: '2 hour notification'},
+        '1D': {policyType: 'notif', short: '1 day notification', default: true},
+        '2D': {policyType: 'notif', short: '2 day notification'},
+        'NO': {policyType: 'notif', short: 'Notify and hold'},
+        'WDA': {policyType: 'window', short: 'Weekday AM'},
+        'WDP': {policyType: 'window', short: 'Weekday PM'},
+        'WDE': {policyType: 'window', short: 'Weekday Eve'},
+        'WEE': {policyType: 'window', short: 'Weekend Eve'},
+        'A': {policyType: 'window', short: 'Anytime', default: true}
     },
     nodeMailerConfig: {
         host: 'mailjet',
